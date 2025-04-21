@@ -4,13 +4,24 @@
 #include "matrix.h"
 #include <tuple>
 
-inline std::tuple<real, Matrix2d, Matrix2d> functional_Huang(const Matrix2d& J)
+enum class Functional
+{
+    HUANG,
+    WINSLOW
+};
+
+namespace MMPDE
+{
+
+inline std::tuple<real, Matrix2d, Matrix2d> functional_Huang(const Matrix2d& J, real detJ, const Matrix2d& M)
 {
 
 }
 
 inline std::tuple<real, Matrix2d, Matrix2d> functional_Winslow(const Matrix2d& J)
 {
+
+}
 
 }
 

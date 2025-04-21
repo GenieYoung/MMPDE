@@ -1,8 +1,13 @@
 #ifndef __MMPDE_MATRIX__
 #define __MMPDE_MATRIX__
 
-#include "base.h"
 #include <iostream>
+#include <cassert>
+
+namespace MMPDE
+{
+
+typedef double real;
 
 struct Matrix2d
 {
@@ -20,6 +25,17 @@ struct Matrix2d
             a10 * other.a01 + a11 * other.a11);
     }
 
+    Matrix2d operator+(const Matrix2d& other) const
+    {
+        return Matrix2d(a00 + other.a00, a01 + other.a01, a10 + other.a10, a11 + other.a11);
+    }
+
+    Matrix2d operator/(real scalar) const
+    {
+        assert(scalar != 0);
+        return Matrix2d(a00 / scalar, a01 / scalar, a10 / scalar, a11 / scalar);
+    }
+
     Matrix2d transpose() const
     {
         return Matrix2d(a00, a10, a01, a11);
@@ -35,6 +51,13 @@ struct Matrix2d
         return a00 * a11 - a01 * a10;
     }
 
+    Matrix2d inverse() const
+    {
+        real d = det();
+        assert(d != 0);
+        return Matrix2d(a11 / d, -a01 / d, -a10 / d, a00 / d);
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Matrix2d& m)
     {
         os << "[" << m.a00 << ", " << m.a01 << "]\n"
@@ -45,5 +68,6 @@ struct Matrix2d
     real a00, a01, a10, a11;
 };
 
+}
 
 #endif
