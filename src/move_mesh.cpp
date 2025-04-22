@@ -7,9 +7,9 @@ namespace MMPDE
         const Trimesh2d& Xi_ref,
         const Trimesh2d& X,
         real tau,
-        Functional G)
+        Functional Func)
     {
-        MoveMeshRHS rhs(Xi_ref, X, tau, G);
+        MoveMeshRHS rhs(Xi_ref, X, tau, Func);
 
         std::vector<real> xi = Xi_ref.get_vertices();
         
@@ -20,8 +20,8 @@ namespace MMPDE
         return X;
     }
 
-    MoveMeshRHS::MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional G)
-        : _Xi_ref(Xi_ref), _X(X), _tau(tau), _G(G)
+    MoveMeshRHS::MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional Func)
+        : _Xi_ref(Xi_ref), _X(X), _tau(tau), _Func(Func)
     {
         assert(_X.n_faces() == _Xi_ref.n_faces());
     }
@@ -30,7 +30,7 @@ namespace MMPDE
                                  std::vector<real>& dxidt,
                                  const double t) const
     {
-        dxidt.resize(xi.size());
+        dxidt.resize(xi.size(), 0);
 
         std::vector<Matrix2d> E_inv(_X.n_faces());
         std::vector<real> detE(_X.n_faces());
@@ -42,7 +42,7 @@ namespace MMPDE
         std::vector<real> detEc(_Xi_ref.n_faces());
 
         std::vector<Matrix2d> J(_X.n_faces());
-        std::vector<Matrix2d> detJ(_X.n_faces());
+        std::vector<real> detJ(_X.n_faces());
 
         std::vector<Matrix2d> Mk(_X.n_faces());
 
@@ -68,5 +68,39 @@ namespace MMPDE
             J[i] = Ec[i] * E_inv[i];
             detJ[i] = detEc[i] / detE[i];
         }
+
+        std::vector<Matrix2d> GJ(_X.n_faces());
+        std::vector<real> GdetJ(_X.n_faces());
+
+        if(_Func == Functional::HUANG)
+        {
+            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            {
+                real G_, GdetJ_;
+                Matrix2d GJ_;
+                functional_Huang(J[i], detJ[i], Mk[i], G_, GJ_, GdetJ_);
+                GJ[i] = GJ_;
+                GdetJ[i] = GdetJ_ * detJ[i];
+            }
+        }
+        else if(_Func == Functional::WINSLOW)
+        {
+            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            {
+                real G_, GdetJ_;
+                Matrix2d GJ_;
+                functional_Winslow(J[i], Mk[i], G_, GJ_, GdetJ_);
+                GJ[i] = GJ_;
+                GdetJ[i] = GdetJ_ * detJ[i];
+            }
+        }
+
+        for(unsigned i = 0; i < _X.n_faces(); ++i)
+        {
+            Matrix2d I_xi_K = E_inv[i] * GJ[i] + Ec_inv[i] * GdetJ[i];
+            
+        }
+
+        int s;
     }
 }

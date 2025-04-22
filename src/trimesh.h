@@ -23,6 +23,8 @@ namespace MMPDE
 
             std::vector<real> get_vertices() const;
 
+            std::vector<unsigned> get_vertices(unsigned fid) const;
+
             std::vector<std::array<unsigned, 3>> get_faces() const;
 
             void set_value(const std::function<real(const Point2d&)>& func);

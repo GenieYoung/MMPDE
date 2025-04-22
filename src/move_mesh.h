@@ -12,12 +12,12 @@ namespace MMPDE
                         const Trimesh2d& Xi_ref,
                         const Trimesh2d& X,
                         real tau,
-                        Functional G);
+                        Functional Func);
 
     class MoveMeshRHS
     {
         public:
-            MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional G);
+            MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional Func);
 
             void operator()(const std::vector<real>& xi,
                             std::vector<real>& dxidt,
@@ -27,7 +27,7 @@ namespace MMPDE
             const Trimesh2d& _Xi_ref;
             const Trimesh2d& _X;
             real _tau;
-            Functional _G;
+            Functional _Func;
     };
 
     struct push_back_state_and_time

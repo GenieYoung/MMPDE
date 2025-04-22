@@ -11,7 +11,7 @@ typedef double real;
 
 struct Matrix2d
 {
-    Matrix2d(real _a00=0, real _a01=0, real _a10=0, real _a11=0)
+    explicit Matrix2d(real _a00=0, real _a01=0, real _a10=0, real _a11=0)
         : a00(_a00), a01(_a01), a10(_a10), a11(_a11) 
     {
     }
@@ -23,6 +23,11 @@ struct Matrix2d
             a00 * other.a01 + a01 * other.a11,
             a10 * other.a00 + a11 * other.a10,
             a10 * other.a01 + a11 * other.a11);
+    }
+
+    Matrix2d operator*(real scalar) const
+    {
+        return Matrix2d(a00 * scalar, a01 * scalar, a10 * scalar, a11 * scalar);
     }
 
     Matrix2d operator+(const Matrix2d& other) const
