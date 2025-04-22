@@ -27,6 +27,8 @@ namespace MMPDE
 
             std::vector<std::array<unsigned, 3>> get_faces() const;
 
+            const Matrix2d& get_metric(unsigned vid) const;
+
             void set_value(const std::function<real(const Point2d&)>& func);
 
             void compute_metric_tensor();

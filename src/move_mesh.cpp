@@ -95,10 +95,45 @@ namespace MMPDE
             }
         }
 
+        std::vector<std::array<unsigned, 3>> tris = _X.get_faces();
+
         for(unsigned i = 0; i < _X.n_faces(); ++i)
         {
-            Matrix2d I_xi_K = E_inv[i] * GJ[i] + Ec_inv[i] * GdetJ[i];
-            
+            Matrix2d I_xi_K = (E_inv[i] * GJ[i] + Ec_inv[i] * GdetJ[i]) * volK[i];
+            const std::array<unsigned,3>& tri = tris[i];
+            dxidt[2*tri[1]] = I_xi_K.a00;
+            dxidt[2*tri[1]+1] = I_xi_K.a10;
+            dxidt[2*tri[2]] = I_xi_K.a01;
+            dxidt[2*tri[2]+1] = I_xi_K.a11;
+            dxidt[2*tri[0]] -= I_xi_K.a00;
+            dxidt[2*tri[0]] -= I_xi_K.a01;
+            dxidt[2*tri[0]+1] -= I_xi_K.a10;
+            dxidt[2*tri[0]+1] -= I_xi_K.a11;
+        }
+
+        std::vector<real> b_factor(_X.n_faces());
+
+        if(_Func == Functional::HUANG)
+        {
+            real p = 1.5;
+            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            {
+                b_factor[i] = std::pow(_X.get_metric(i).det(), 0.5*(p-1));
+            }
+        }
+        else if(_Func == Functional::WINSLOW)
+        {
+            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            {
+                b_factor[i] = std::pow(_X.get_metric(i).det(), 0.5);
+            }
+        }
+
+        for(unsigned i = 0; i < b_factor.size(); ++i)
+        {
+            dxidt[3*i] *= (-1 / _tau * b_factor[i]);
+            dxidt[3*i+1] *= (-1 / _tau * b_factor[i]);
+            dxidt[3*i+2] *= (-1 / _tau * b_factor[i]);
         }
 
         int s;

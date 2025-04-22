@@ -61,6 +61,11 @@ namespace MMPDE
         return faces;
     }
 
+    const Matrix2d& Trimesh2d::get_metric(unsigned vid) const
+    {
+        return _metrics[vid];
+    }
+
     void Trimesh2d::set_value(const std::function<real(const Point2d&)>& func)
     {
         _values.resize(_mesh.n_vertices());
