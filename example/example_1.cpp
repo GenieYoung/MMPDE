@@ -11,7 +11,7 @@ real U_func(const Point2d& p)
 int main()
 {
     // set basic parameters
-    unsigned n = 1;
+    unsigned n = 10;
     unsigned times = 10;
     std::pair<real, real> tspan(0, 0.1);
     real tau = 0.01;
@@ -21,17 +21,24 @@ int main()
     real step = 1.0 / n;
     std::generate(rows.begin(), rows.end(), [start = -step, step]() mutable { return start+=step; });
     std::generate(cols.begin(), cols.end(), [start = -step, step]() mutable { return start+=step; });
-    Trimesh2d mesh(rows, cols);
+    Trimesh2d ref_mesh(rows, cols);
+
+    Trimesh2d mesh = ref_mesh;
+    mesh.perturb(0.03);
+
+    ref_mesh.export_vtk("ref_mesh.vtk");
+    mesh.export_vtk("mesh.vtk");
     
-    mesh.set_value(U_func);
+    //mesh.set_value(U_func);
 
     mesh.compute_metric_tensor();
 
+    Trimesh2d result_mesh;
     for(unsigned i = 0; i < times; ++i)
     {
-        mesh = move_mesh(tspan, mesh, mesh, tau, Functional::HUANG);
+        result_mesh = move_mesh(tspan, ref_mesh, mesh, tau, Functional::HUANG);
+        result_mesh.export_vtk(std::string("result_") + std::to_string(i) + ".vtk");
     }
 
-    mesh.export_vtk("mesh.vtk");
     return 0;
 }

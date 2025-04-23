@@ -61,9 +61,19 @@ namespace MMPDE
         return faces;
     }
 
+    bool Trimesh2d::is_boundary(unsigned vid) const
+    {
+        return _mesh.is_boundary(_mesh.vertex_handle(vid));
+    }
+
     const Matrix2d& Trimesh2d::get_metric(unsigned vid) const
     {
         return _metrics[vid];
+    }
+
+    void Trimesh2d::set_vertex(unsigned vid, const Point2d& p)
+    {
+        _mesh.point(_mesh.vertex_handle(vid)) = p;
     }
 
     void Trimesh2d::set_value(const std::function<real(const Point2d&)>& func)
@@ -92,6 +102,19 @@ namespace MMPDE
         }
         return Matrix2d(pts[1].x() - pts[0].x(), pts[2].x() - pts[0].x(),
                         pts[1].y() - pts[0].y(), pts[2].y() - pts[0].y());
+    }
+
+    void Trimesh2d::perturb(real eps)
+    {
+        for(auto vh = _mesh.vertices_begin(); vh != _mesh.vertices_end(); ++vh)
+        {
+            if(_mesh.is_boundary(*vh))
+                continue;
+            Point2d p = _mesh.point(*vh);
+            p.x() += eps * (rand() % 100 / 100.0);
+            p.y() += eps * (rand() % 100 / 100.0);
+            _mesh.point(*vh) = p;
+        }
     }
 
     Matrix2d Trimesh2d::average_metric(unsigned fid) const
@@ -152,15 +175,18 @@ namespace MMPDE
     
         fout << std::endl;
 
-        fout << "POINT_DATA " << _mesh.n_vertices() << '\n';
-        fout << "SCALARS value double" << '\n';
-        fout << "LOOKUP_TABLE default" << '\n';
-        for(auto vh = _mesh.vertices_begin(); vh != _mesh.vertices_end(); ++vh)
+        if(_values.size() == _mesh.n_vertices())
         {
-            //fout << _mesh.attribute(*vh) << '\n';
-            fout << _values[vh->idx()] << '\n';
+            fout << "POINT_DATA " << _mesh.n_vertices() << '\n';
+            fout << "SCALARS value double" << '\n';
+            fout << "LOOKUP_TABLE default" << '\n';
+            for(auto vh = _mesh.vertices_begin(); vh != _mesh.vertices_end(); ++vh)
+            {
+                //fout << _mesh.attribute(*vh) << '\n';
+                fout << _values[vh->idx()] << '\n';
+            }
+            fout << '\n';
         }
-        fout << '\n';
 
         fout.close();
     }

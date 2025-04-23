@@ -1,5 +1,6 @@
 #include "move_mesh.h"
 #include <boost/numeric/odeint.hpp>
+#include <cfenv>
 
 namespace MMPDE
 {
@@ -13,11 +14,19 @@ namespace MMPDE
 
         std::vector<real> xi = Xi_ref.get_vertices();
         
-        double dt = (tspan.second - tspan.first) / 10.0;
+        double dt = (tspan.second - tspan.first) / 100.0;
         std::vector<std::vector<real>> xi_vec;
         std::vector<double> times;
         boost::numeric::odeint::integrate(rhs, xi, tspan.first, tspan.second, dt, push_back_state_and_time(xi_vec, times));
-        return X;
+        //assert(!std::fetestexcept(FE_INVALID));
+
+        Trimesh2d result = X;
+        for(unsigned i = 0; i < X.n_vertices(); ++i)
+        {
+            result.set_vertex(i, Point2d(xi[2*i], xi[2*i+1]));
+        }
+
+        return result;
     }
 
     MoveMeshRHS::MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional Func)
@@ -31,6 +40,8 @@ namespace MMPDE
                                  const double t) const
     {
         dxidt.resize(xi.size(), 0);
+
+        std::vector<std::array<unsigned, 3>> tris = _X.get_faces();
 
         std::vector<Matrix2d> E_inv(_X.n_faces());
         std::vector<real> detE(_X.n_faces());
@@ -95,35 +106,33 @@ namespace MMPDE
             }
         }
 
-        std::vector<std::array<unsigned, 3>> tris = _X.get_faces();
-
         for(unsigned i = 0; i < _X.n_faces(); ++i)
         {
             Matrix2d I_xi_K = (E_inv[i] * GJ[i] + Ec_inv[i] * GdetJ[i]) * volK[i];
             const std::array<unsigned,3>& tri = tris[i];
-            dxidt[2*tri[1]] = I_xi_K.a00;
-            dxidt[2*tri[1]+1] = I_xi_K.a10;
-            dxidt[2*tri[2]] = I_xi_K.a01;
-            dxidt[2*tri[2]+1] = I_xi_K.a11;
+            dxidt[2*tri[1]] += I_xi_K.a00;
+            dxidt[2*tri[2]] += I_xi_K.a10;
             dxidt[2*tri[0]] -= I_xi_K.a00;
-            dxidt[2*tri[0]] -= I_xi_K.a01;
-            dxidt[2*tri[0]+1] -= I_xi_K.a10;
+            dxidt[2*tri[0]] -= I_xi_K.a10;
+            dxidt[2*tri[1]+1] += I_xi_K.a01;
+            dxidt[2*tri[2]+1] += I_xi_K.a11;
+            dxidt[2*tri[0]+1] -= I_xi_K.a01;
             dxidt[2*tri[0]+1] -= I_xi_K.a11;
         }
 
-        std::vector<real> b_factor(_X.n_faces());
+        std::vector<real> b_factor(_X.n_vertices());
 
         if(_Func == Functional::HUANG)
         {
             real p = 1.5;
-            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            for(unsigned i = 0; i < _X.n_vertices(); ++i)
             {
                 b_factor[i] = std::pow(_X.get_metric(i).det(), 0.5*(p-1));
             }
         }
         else if(_Func == Functional::WINSLOW)
         {
-            for(unsigned i = 0; i < _X.n_faces(); ++i)
+            for(unsigned i = 0; i < _X.n_vertices(); ++i)
             {
                 b_factor[i] = std::pow(_X.get_metric(i).det(), 0.5);
             }
@@ -131,11 +140,17 @@ namespace MMPDE
 
         for(unsigned i = 0; i < b_factor.size(); ++i)
         {
-            dxidt[3*i] *= (-1 / _tau * b_factor[i]);
-            dxidt[3*i+1] *= (-1 / _tau * b_factor[i]);
-            dxidt[3*i+2] *= (-1 / _tau * b_factor[i]);
+            dxidt[2*i] *= (-1 / _tau * b_factor[i]);
+            dxidt[2*i+1] *= (-1 / _tau * b_factor[i]);
         }
 
-        int s;
+        for(unsigned i = 0; i < _X.n_vertices(); ++i)
+        {
+            if(_X.is_boundary(i))
+            {
+                dxidt[2*i] = 0;
+                dxidt[2*i+1] = 0;
+            }
+        }
     }
 }

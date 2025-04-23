@@ -25,11 +25,17 @@ namespace MMPDE
 
             std::vector<std::array<unsigned, 3>> get_faces() const;
 
+            bool is_boundary(unsigned vid) const;
+
             const Matrix2d& get_metric(unsigned vid) const;
+
+            void set_vertex(unsigned vid, const Point2d& p);
 
             void set_value(const std::function<real(const Point2d&)>& func);
 
             void compute_metric_tensor();
+
+            void perturb(real eps);
 
             Matrix2d face_edge_matrix(unsigned fid) const;
 
