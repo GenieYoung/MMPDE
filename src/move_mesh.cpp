@@ -1,9 +1,12 @@
 #include "move_mesh.h"
+#include "interpolate.h"
 #include <boost/numeric/odeint.hpp>
-#include <cfenv>
 
 namespace MMPDE
 {
+    std::vector<real> reshape(const std::vector<Point2d>& points);
+    std::vector<Point2d> reshape(const std::vector<real>& point_list);
+
     Trimesh2d move_mesh(const std::pair<real, real>& tspan,
         const Trimesh2d& Xi_ref,
         const Trimesh2d& X,
@@ -18,15 +21,17 @@ namespace MMPDE
         std::vector<std::vector<real>> xi_vec;
         std::vector<double> times;
         boost::numeric::odeint::integrate(rhs, xi, tspan.first, tspan.second, dt, push_back_state_and_time(xi_vec, times));
-        //assert(!std::fetestexcept(FE_INVALID));
 
-        Trimesh2d result = X;
+        Interpolate intp(reshape(xi), Xi_ref.get_faces());
+        std::vector<Point2d> new_X_pts = intp(reshape(X.get_vertices()), reshape(Xi_ref.get_vertices()));
+
+        Trimesh2d new_mesh = X;
         for(unsigned i = 0; i < X.n_vertices(); ++i)
         {
-            result.set_vertex(i, Point2d(xi[2*i], xi[2*i+1]));
+            new_mesh.set_vertex(i, Point2d(xi[2*i], xi[2*i+1]));
         }
 
-        return result;
+        return new_mesh;
     }
 
     MoveMeshRHS::MoveMeshRHS(const Trimesh2d& Xi_ref, const Trimesh2d& X, real tau, Functional Func)
@@ -152,5 +157,28 @@ namespace MMPDE
                 dxidt[2*i+1] = 0;
             }
         }
+    }
+
+    std::vector<real> reshape(const std::vector<Point2d>& points)
+    {
+        std::vector<real> result;
+        result.reserve(points.size() * 2);
+        for(const auto& p : points)
+        {
+            result.push_back(p.x());
+            result.push_back(p.y());
+        }
+        return result;
+    }
+
+    std::vector<Point2d> reshape(const std::vector<real>& point_list)
+    {
+        std::vector<Point2d> result;
+        result.reserve(point_list.size() / 2);
+        for(size_t i = 0; i < point_list.size(); i += 2)
+        {
+            result.emplace_back(point_list[i], point_list[i + 1]);
+        }
+        return result;
     }
 }

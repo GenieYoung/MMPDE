@@ -29,6 +29,8 @@ namespace MMPDE
 
             const Matrix2d& get_metric(unsigned vid) const;
 
+            const Point2d& get_vertex(unsigned vid) const;
+
             void set_vertex(unsigned vid, const Point2d& p);
 
             void set_value(const std::function<real(const Point2d&)>& func);
@@ -47,7 +49,7 @@ namespace MMPDE
 
             void export_vtk(const std::string& file) const;
 
-        private:
+        public:
             std::vector<real> _values;
 
             std::vector<Matrix2d> _metrics;

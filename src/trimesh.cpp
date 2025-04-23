@@ -66,6 +66,11 @@ namespace MMPDE
         return _mesh.is_boundary(_mesh.vertex_handle(vid));
     }
 
+    const Point2d& Trimesh2d::get_vertex(unsigned vid) const
+    {
+        return _mesh.point(_mesh.vertex_handle(vid));
+    }
+
     const Matrix2d& Trimesh2d::get_metric(unsigned vid) const
     {
         return _metrics[vid];

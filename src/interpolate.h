@@ -2,6 +2,8 @@
 #define __MMPDE_INTERPOLATE__
 
 #include "trimesh.h"
+#include "RTree.h"
+#include <set>
 
 namespace MMPDE
 {
@@ -10,13 +12,23 @@ namespace MMPDE
         public:
             Interpolate(const Trimesh2d& mesh);
 
-        public:
-            std::vector<real> operator()(const std::vector<real>& values, const std::vector<Point2d>& query_points) const;
+            Interpolate(const std::vector<Point2d>& nodes, const std::vector<std::array<unsigned, 3>>& faces);
 
-            std::vector<Point2d> operator()(const std::vector<Point2d>& positions, const std::vector<Point2d>& query_points) const;
+        public:
+            template<typename T>
+            std::vector<T> operator()(const std::vector<T>& values, const std::vector<Point2d>& query_points) const; 
 
         private:
-            const Trimesh2d& _mesh;
+            std::vector<Point2d> _nodes;
+
+            std::map<Point2d, unsigned> _nodes_map;
+
+            std::vector<std::array<unsigned, 3>> _faces;
+
+            typedef RTree<void*, real, 2, real, 8, 4> RTriangleTree;
+            mutable RTriangleTree _rtree;
+
+            static bool _candidate_search_call_back(void* mp, void* arg);
     };
 }
 

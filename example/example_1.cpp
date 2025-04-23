@@ -33,11 +33,11 @@ int main()
 
     mesh.compute_metric_tensor();
 
-    Trimesh2d result_mesh;
+    Trimesh2d new_mesh;
     for(unsigned i = 0; i < times; ++i)
     {
-        result_mesh = move_mesh(tspan, ref_mesh, mesh, tau, Functional::HUANG);
-        result_mesh.export_vtk(std::string("result_") + std::to_string(i) + ".vtk");
+        new_mesh = move_mesh(tspan, ref_mesh, mesh, tau, Functional::HUANG);
+        new_mesh.export_vtk(std::string("new_mesh_") + std::to_string(i) + ".vtk");
     }
 
     return 0;
