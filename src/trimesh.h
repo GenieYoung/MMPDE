@@ -23,8 +23,6 @@ namespace MMPDE
 
             std::vector<real> get_vertices() const;
 
-            std::vector<unsigned> get_vertices(unsigned fid) const;
-
             std::vector<std::array<unsigned, 3>> get_faces() const;
 
             const Matrix2d& get_metric(unsigned vid) const;
