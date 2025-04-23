@@ -14,7 +14,7 @@ namespace MMPDE
 
         std::vector<real> xi = Xi_ref.get_vertices();
         
-        double dt = (tspan.second - tspan.first) / 100.0;
+        double dt = (tspan.second - tspan.first) / 10.0;
         std::vector<std::vector<real>> xi_vec;
         std::vector<double> times;
         boost::numeric::odeint::integrate(rhs, xi, tspan.first, tspan.second, dt, push_back_state_and_time(xi_vec, times));

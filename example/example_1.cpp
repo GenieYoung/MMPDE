@@ -13,7 +13,7 @@ int main()
     // set basic parameters
     unsigned n = 10;
     unsigned times = 10;
-    std::pair<real, real> tspan(0, 0.1);
+    std::pair<real, real> tspan(0, 1);
     real tau = 0.01;
 
     // build initial mesh
