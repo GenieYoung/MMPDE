@@ -2,6 +2,11 @@
 
 using namespace MMPDE;
 
+real U_func(const Point2d& p)
+{
+    return tanh(-30*(p.y()-0.5-0.25*sin(2*M_PI*p.x())));
+}
+
 int main()
 {
     // set basic parameters
@@ -19,18 +24,15 @@ int main()
     construct_trimesh(ref_mesh, rows, cols);
 
     Trimesh2d mesh = ref_mesh;
-    //perturb(mesh, step / 5.0);
 
     export_vtk(ref_mesh, "ref_mesh.vtk");
-    export_vtk(mesh, "mesh.vtk");
 
-    std::vector<Matrix2d> M = calc_vertex_metric(mesh, MetricType::IDENTITY);
-
-    Trimesh2d new_mesh;
     for(unsigned i = 0; i < times; ++i)
     {
-        new_mesh = move_mesh(tspan, ref_mesh, mesh, M, tau, Functional::HUANG);
-        export_vtk(new_mesh, (std::string("new_mesh_") + std::to_string(i) + ".vtk"));
+        std::vector<real> values = calc_vertex_value(mesh, U_func);
+        std::vector<Matrix2d> M = calc_vertex_metric(mesh, values);
+        export_vtk(mesh, (std::string("new_mesh_") + std::to_string(i) + ".vtk"), values);
+        mesh = move_mesh(tspan, ref_mesh, mesh, M, tau, Functional::HUANG);
     }
 
     return 0;

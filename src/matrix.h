@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <eigen3/Eigen/Dense>
 
 namespace MMPDE
 {
@@ -61,6 +62,14 @@ struct Matrix2d
         real d = det();
         assert(d != 0);
         return Matrix2d(a11 / d, -a01 / d, -a10 / d, a00 / d);
+    }
+
+    Matrix2d sqrt() const
+    {
+        Eigen::Matrix2d A;
+        A << a00, a01, a10, a11;
+        Eigen::Matrix2d sqrtA = A.llt().matrixL();
+        return Matrix2d(sqrtA(0, 0), sqrtA(0, 1), sqrtA(1, 0), sqrtA(1, 1));
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Matrix2d& m)

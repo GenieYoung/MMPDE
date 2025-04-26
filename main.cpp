@@ -14,11 +14,5 @@ real func2(const Point2d& p)
 
 int main()
 {
-    std::vector<real> rows(50), cols(50);
-    std::generate(rows.begin(), rows.end(), [start = 0.0]() mutable { return start+=0.02; });
-    std::generate(cols.begin(), cols.end(), [start = 0.0]() mutable { return start+=0.02; });
-    Trimesh2d mesh(rows, cols);
-    mesh.set_value(func2);
-    mesh.export_vtk("mesh.vtk");
     return 0;
 }

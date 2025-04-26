@@ -3,29 +3,8 @@
 
 namespace MMPDE
 {
-    Interpolate::Interpolate(const Trimesh2d& mesh)
+    Interpolate::Interpolate(const Trimesh2d& mesh) : Interpolate(get_vertices(mesh), get_faces(mesh))
     {
-        _nodes.reserve(mesh.n_vertices());
-        for(unsigned i = 0; i < mesh.n_vertices(); ++i)
-        {
-            const Point2d& p = mesh.get_vertex(i);
-            _nodes.push_back(p);
-            _nodes_map.insert({p, i});
-        }
-
-        _faces = mesh.get_faces();
-
-        for(unsigned i = 0; i < _faces.size(); ++i)
-        {
-            std::array<unsigned, 3>& tri = _faces[i];
-            real x_min = std::min({_nodes[tri[0]].x(), _nodes[tri[1]].x(), _nodes[tri[2]].x()});
-            real x_max = std::max({_nodes[tri[0]].x(), _nodes[tri[1]].x(), _nodes[tri[2]].x()});
-            real y_min = std::min({_nodes[tri[0]].y(), _nodes[tri[1]].y(), _nodes[tri[2]].y()});
-            real y_max = std::max({_nodes[tri[0]].y(), _nodes[tri[1]].y(), _nodes[tri[2]].y()});
-            real min_loc[2] = {x_min, y_min};
-            real max_loc[2] = {x_max, y_max};
-            _rtree.Insert(min_loc, max_loc, (void*)(&tri));
-        }
     }
 
     Interpolate::Interpolate(const std::vector<Point2d>& nodes, const std::vector<std::array<unsigned, 3>>& faces)
