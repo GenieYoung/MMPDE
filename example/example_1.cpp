@@ -5,9 +5,8 @@ using namespace MMPDE;
 int main()
 {
     // set basic parameters
-    unsigned n = 10;
-    unsigned times = 10;
-    std::pair<real, real> tspan(0, 1);
+    unsigned n = 20;
+    std::pair<double, double> tspan(0, 0.1);
     real tau = 0.01;
 
     // build initial mesh
@@ -20,17 +19,18 @@ int main()
 
     Trimesh2d mesh = ref_mesh;
     //perturb(mesh, step / 5.0);
+    perturb(mesh, 0.01);
 
     export_vtk(ref_mesh, "ref_mesh.vtk");
     export_vtk(mesh, "mesh.vtk");
 
     std::vector<Matrix2d> M = calc_vertex_metric(mesh, MetricType::IDENTITY);
 
-    Trimesh2d new_mesh;
+    unsigned times = 10;
     for(unsigned i = 0; i < times; ++i)
     {
-        new_mesh = move_mesh(tspan, ref_mesh, mesh, M, tau, Functional::HUANG);
-        export_vtk(new_mesh, (std::string("new_mesh_") + std::to_string(i) + ".vtk"));
+        export_vtk(mesh, (std::string("new_mesh_") + std::to_string(i) + ".vtk"));
+        mesh = move_mesh(tspan, ref_mesh, mesh, M, tau, Functional::HUANG);
     }
 
     return 0;

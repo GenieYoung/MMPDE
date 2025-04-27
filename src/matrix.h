@@ -17,6 +17,11 @@ struct Matrix2d
     {
     }
 
+    Matrix2d(const Eigen::Matrix<real, 2, 2>& E)
+        : Matrix2d(E(0,0), E(0,1), E(1,0), E(1,1))
+    {
+    }
+
     Matrix2d operator*(const Matrix2d& other) const
     {
         return Matrix2d(
@@ -60,16 +65,19 @@ struct Matrix2d
     Matrix2d inverse() const
     {
         real d = det();
-        assert(d != 0);
+        //assert(d != 0);
+        if(d == 0)
+            return Matrix2d(std::numeric_limits<real>::max(), std::numeric_limits<real>::max(), 
+                            std::numeric_limits<real>::max(), std::numeric_limits<real>::max());
         return Matrix2d(a11 / d, -a01 / d, -a10 / d, a00 / d);
     }
 
     Matrix2d sqrt() const
     {
-        Eigen::Matrix2d A;
+        Eigen::Matrix<real, 2, 2> A;
         A << a00, a01, a10, a11;
-        Eigen::Matrix2d sqrtA = A.llt().matrixL();
-        return Matrix2d(sqrtA(0, 0), sqrtA(0, 1), sqrtA(1, 0), sqrtA(1, 1));
+        Eigen::Matrix<real, 2, 2> sqrtA = A.llt().matrixL();
+        return Matrix2d(sqrtA);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const Matrix2d& m)

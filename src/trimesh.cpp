@@ -54,6 +54,17 @@ namespace MMPDE
         // }
     }
 
+    void construct_trimesh(Trimesh2d& mesh, const std::vector<Point2d>& pts, const std::vector<std::array<unsigned, 3>>& tris)
+    {
+        mesh.clear();
+
+        for(unsigned i = 0; i < pts.size(); ++i)
+            mesh.add_vertex(pts[i]);
+
+        for(unsigned i = 0; i < tris.size(); ++i)
+            mesh.add_face(mesh.vertex_handle(tris[i][0]), mesh.vertex_handle(tris[i][1]), mesh.vertex_handle(tris[i][2]));
+    }
+
     void update_trimesh(Trimesh2d& mesh, const std::vector<Point2d>& new_vertices)
     {
         assert(new_vertices.size() == mesh.n_vertices());
@@ -120,8 +131,8 @@ namespace MMPDE
             {
                 pts.push_back(mesh.point(*fvit));
             }
-            face_edge_matrix[fit->idx()] = Matrix2d(pts[1].x() - pts[0].x(), pts[1].y() - pts[0].y(),
-                                                    pts[2].x() - pts[0].x(), pts[2].y() - pts[0].y());
+            face_edge_matrix[fit->idx()] = Matrix2d(pts[1].x() - pts[0].x(), pts[2].x() - pts[0].x(),
+                                                    pts[1].y() - pts[0].y(), pts[2].y() - pts[0].y());
         }
         return face_edge_matrix;
     }
@@ -133,8 +144,10 @@ namespace MMPDE
             if(mesh.is_boundary(*vh))
                 continue;
             Point2d p = mesh.point(*vh);
-            p.x() += degree * (rand() % 200 / 100.0 - 1.0);
-            p.y() += degree * (rand() % 200 / 100.0 - 1.0);
+            // p.x() += degree * (rand() % 200 / 100.0 - 1.0);
+            // p.y() += degree * (rand() % 200 / 100.0 - 1.0);
+            p.x() += degree;
+            p.y() += degree;
             mesh.point(*vh) = p;
         }
     }

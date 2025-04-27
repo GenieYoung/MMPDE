@@ -11,6 +11,8 @@ namespace MMPDE
 
     void construct_trimesh(Trimesh2d& mesh, const std::vector<real>& rows, const std::vector<real>& cols);
 
+    void construct_trimesh(Trimesh2d& mesh, const std::vector<Point2d>& pts, const std::vector<std::array<unsigned, 3>>& tris);
+
     void update_trimesh(Trimesh2d& mesh, const std::vector<Point2d>& new_vertices);
 
     std::vector<Point2d> get_vertices(const Trimesh2d& mesh);
